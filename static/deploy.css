@@ -1,0 +1,239 @@
+/* 出撃画面のスタイル */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Orbitron', 'Arial', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+#deployScreen {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#backgroundLayer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 2;
+}
+
+#content {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+#title {
+    margin-bottom: 60px;
+}
+
+.title-main {
+    font-size: 4rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(102, 126, 234, 0.8),
+                 0 0 40px rgba(102, 126, 234, 0.6),
+                 0 0 60px rgba(102, 126, 234, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    text-align: center;
+}
+
+#selectionContainer {
+    display: flex;
+    gap: 60px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+}
+
+.selection-button {
+    width: 300px;
+    height: 400px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: visible;
+}
+
+.selection-button::before {
+    display: none;
+}
+
+.selection-button:hover::before {
+    display: none;
+}
+
+.selection-button:hover {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: none;
+    transform: none;
+    opacity: 0.8;
+}
+
+.selection-button:active {
+    transform: none;
+}
+
+/* リップルアニメーション */
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: ripple 0.6s ease-out;
+    pointer-events: none;
+}
+
+.selection-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: rgba(100, 100, 100, 0.5);
+}
+
+.selection-button:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.button-icon {
+    font-size: 6rem;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.8));
+}
+
+.button-label {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.button-description {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    line-height: 1.5;
+}
+
+#bottomNav {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.nav-button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 12px 30px;
+    font-size: 1rem;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 0;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.nav-button:hover {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: none;
+    opacity: 0.8;
+}
+
+.nav-button:active {
+    transform: none;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .title-main {
+        font-size: 2.5rem;
+    }
+    
+    #selectionContainer {
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    .selection-button {
+        width: 250px;
+        height: 350px;
+    }
+    
+    .button-icon {
+        font-size: 4rem;
+    }
+    
+    .button-label {
+        font-size: 2rem;
+    }
+}
+

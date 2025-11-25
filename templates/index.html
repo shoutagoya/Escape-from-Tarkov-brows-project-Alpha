@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EFT - Escape from Tarkov</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='character.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* UI要素 */
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        #raidPartsStatus {
+            position: absolute;
+            top: 320px;
+            left: 20px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.5);
+            padding: 8px 14px;
+            border-radius: 5px;
+        }
+
+        #lootPrompt {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px 18px;
+            background: rgba(0, 0, 0, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            pointer-events: none;
+            z-index: 180;
+        }
+
+        #lootPrompt.error {
+            border-color: rgba(255, 120, 120, 0.8);
+            color: #ff8080;
+        }
+
+        /* 左上：部位別体力 */
+        #bodyParts {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.5);
+            padding: 10px 15px;
+            border-radius: 5px;
+        }
+
+        .body-part-value {
+            display: inline-block;
+            min-width: 60px;
+            transition: color 0.3s;
+        }
+
+        .body-part-value.healthy {
+            color: #00ff00;
+        }
+
+        .body-part-value.damaged {
+            color: #ff0000;
+        }
+
+        .body-part-value.blacked {
+            color: #000000;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+        }
+
+        #statusEffectsDisplay, #inventoryStatusEffectsDisplay {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+
+        .status-effect-badge {
+            background: rgba(255, 77, 77, 0.3);
+            border: 1px solid rgba(255, 77, 77, 0.6);
+            border-radius: 4px;
+            padding: 4px 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-effect-badge.fracture {
+            background: rgba(255, 200, 0, 0.3);
+            border-color: rgba(255, 200, 0, 0.6);
+        }
+
+        .status-effect-badge.lightBleeding {
+            background: rgba(255, 150, 0, 0.3);
+            border-color: rgba(255, 150, 0, 0.6);
+        }
+
+        .status-effect-badge.heavyBleeding {
+            background: rgba(255, 0, 0, 0.3);
+            border-color: rgba(255, 0, 0, 0.6);
+        }
+
+        .status-effect-badge.blackedOut {
+            background: rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        #inventoryStatusEffectsDetailDisplay {
+            line-height: 1.6;
+        }
+
+        .status-detail-item {
+            margin-bottom: 4px;
+        }
+
+        .body-parts-row {
+            margin: 5px 0;
+        }
+
+        /* 右上：マップ */
+        #map {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #fff;
+            border-radius: 5px;
+        }
+
+        #mapCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 左下：武器 */
+        #weapon {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+        /* 左下：スタミナバー */
+        #staminaContainer {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stamina-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stamina-label {
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            min-width: 80px;
+        }
+
+        .stamina-bar {
+            width: 200px;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stamina-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            transition: width 0.2s;
+            width: 100%;
+        }
+
+        .stamina-bar-fill.low {
+            background: linear-gradient(90deg, #ffff00, #ff0000);
+        }
+
+        .stamina-bar-fill.critical {
+            background: #ff0000;
+        }
+
+        /* 右下：残弾数 */
+        #ammo {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+        #selfDamageContainer {
+            position: absolute;
+            bottom: 120px;
+            right: 20px;
+            width: 220px;
+            z-index: 160;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            pointer-events: auto;
+        }
+
+        .ui-interactive {
+            pointer-events: auto;
+        }
+
+        #selfDamageToggle {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 5px 5px 0 0;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        #selfDamageToggle.active {
+            background: rgba(255,77,77,0.7);
+        }
+
+        #medicalUseProgress {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 320px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 10px 14px;
+            text-align: center;
+            z-index: 155;
+            color: #fff;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .medical-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        #medicalUseProgressFill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+            transition: width 0.1s linear;
+        }
+
+        #selfDamagePanel {
+            background: rgba(0,0,0,0.75);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 10px;
+            backdrop-filter: blur(4px);
+        }
+
+        #selfDamagePanel.hidden {
+            display: none;
+        }
+
+        #selfDamagePanel label {
+            font-size: 12px;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        #selfDamagePanel select,
+        #selfDamagePanel input {
+            width: 100%;
+            margin-bottom: 6px;
+            padding: 4px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.4);
+            color: #fff;
+        }
+
+        #selfDamagePanel button {
+            border: none;
+            border-radius: 4px;
+            padding: 6px;
+            cursor: pointer;
+            color: #fff;
+            font-size: 12px;
+        }
+
+        #selfDamageApply {
+            width: 100%;
+            margin-bottom: 6px;
+            background: #ff4d4d;
+        }
+
+        .status-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .status-btn {
+            flex: 1 1 45%;
+            background: rgba(255,255,255,0.2);
+        }
+
+        #medicalModeModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 11000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+        }
+
+        #medicalModeModal.hidden {
+            display: none;
+        }
+
+        .medical-mode-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .medical-mode-button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: #fff;
+            transition: transform 0.1s ease;
+        }
+
+        .medical-mode-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .medical-mode-button.heal {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
+
+        .medical-mode-button.status {
+            background: linear-gradient(135deg, #f83600, #f9d423);
+        }
+
+        /* クロスヘア */
+        #crosshair {
+            display: none; /* レティクルを非表示 */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+        }
+
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255,255,255,0.8);
+        }
+
+        #crosshair::before {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #crosshair::after {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* インベントリオーバーレイ */
+        #inventoryOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: none;
+            pointer-events: auto;
+            cursor: default;
+        }
+
+        #inventoryOverlay:not(.hidden) {
+            display: flex;
+        }
+
+        #inventoryScreen {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #inventoryMainContent {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            align-items: start;
+            gap: 20px;
+            padding: 20px;
+            width: 100%;
+            height: calc(100vh - 60px);
+        }
+
+        #inventoryLeftScrollArea {
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            gap: 20px;
+            padding-right: 10px;
+        }
+
+        #inventoryLeftScrollArea::-webkit-scrollbar,
+        #inventoryRightPanel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #inventoryLeftScrollArea::-webkit-scrollbar-track,
+        #inventoryRightPanel::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        #inventoryLeftScrollArea::-webkit-scrollbar-thumb,
+        #inventoryRightPanel::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 4px;
+        }
+
+        #inventoryLeftScrollArea::-webkit-scrollbar-thumb:hover,
+        #inventoryRightPanel::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.7);
+        }
+
+        #inventoryLeftPanel {
+            width: 350px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #inventoryGearPanel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 320px;
+            flex-shrink: 0;
+        }
+
+        #inventoryGearPanel.hidden {
+            display: none;
+        }
+
+        #inventoryPlayerModel {
+            background: rgba(20, 20, 30, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .model-container {
+            width: 100%;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .model-placeholder {
+            text-align: center;
+        }
+
+        .model-icon {
+            font-size: 80px;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.5));
+        }
+
+        .model-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        #inventoryEquipmentSlots {
+            background: rgba(20, 20, 30, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .equipment-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .equipment-slot {
+            flex: 1;
+            min-height: 80px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .equipment-slot.small {
+            min-height: 60px;
+        }
+
+        .equipment-slot:hover {
+            border-color: rgba(102, 126, 234, 0.6);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .equipment-slot.drag-over {
+            border-color: rgba(102, 126, 234, 1);
+            background: rgba(102, 126, 234, 0.2);
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .equipment-slot.drag-invalid {
+            border-color: rgba(255, 68, 68, 0.8);
+            background: rgba(255, 68, 68, 0.1);
+        }
+
+        .slot-label {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .slot-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #inventoryRigPanel {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            background: rgba(20, 20, 30, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: visible;
+        }
+
+        #inventoryRigPanel.hidden {
+            display: none;
+        }
+
+        #inventoryRigHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        #inventoryRigHeader h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        #inventoryRigInfo {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        #inventoryRigGrid {
+            flex: 1;
+            display: grid;
+            gap: 2px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px;
+            border-radius: 5px;
+            overflow: auto;
+            min-height: 0;
+            width: fit-content;
+            height: fit-content;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        #inventoryRigGrid.slot-mode {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-content: flex-start;
+            justify-content: flex-start;
+            padding: 5px;
+        }
+
+        .rig-slot {
+            position: relative;
+            border: 1px dashed rgba(102, 126, 234, 0.5);
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 4px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.2s ease, background 0.2s ease;
+            overflow: hidden;
+        }
+
+        .rig-slot.occupied {
+            border-color: rgba(102, 126, 234, 0.9);
+            background: rgba(102, 126, 234, 0.15);
+        }
+
+        #inventoryBackpackPanel {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            background: rgba(20, 20, 30, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: visible;
+        }
+
+        #inventoryBackpackPanel.hidden {
+            display: none;
+        }
+
+        #inventoryBackpackHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        #inventoryBackpackHeader h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        #inventoryBackpackInfo {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        #inventoryBackpackGrid {
+            flex: 1;
+            display: grid;
+            gap: 2px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px;
+            border-radius: 5px;
+            overflow: auto;
+            min-height: 0;
+            width: fit-content;
+            height: fit-content;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        #inventoryRightPanel {
+            width: fit-content;
+            min-width: 700px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: rgba(20, 20, 30, 0.9);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+
+        .grid-cell {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .grid-cell.occupied {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .grid-cell.drag-over {
+            background: rgba(102, 255, 178, 0.3);
+            border-color: rgba(102, 255, 178, 0.8);
+        }
+
+        .item {
+            position: absolute;
+            background: rgba(30, 30, 50, 0.95);
+            border: 2px solid rgba(102, 126, 234, 0.6);
+            border-radius: 4px;
+            padding: 4px;
+            cursor: move;
+            user-select: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+
+        .item:hover {
+            border-color: rgba(102, 126, 234, 1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
+        }
+
+        .item.dragging {
+            z-index: 10000;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .item-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .item-name.hidden {
+            display: none;
+        }
+
+        .item-armor-durability {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
+            background: rgba(0, 0, 0, 0.75);
+            padding: 2px 6px;
+            border-radius: 3px;
+            letter-spacing: 0.02em;
+            z-index: 10;
+        }
+
+        .item-quantity {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: right;
+            margin-top: auto;
+        }
+
+        .item.magazine-highlight {
+            border-color: rgba(102, 255, 178, 0.9) !important;
+            box-shadow: 0 0 15px rgba(102, 255, 178, 0.6) !important;
+        }
+
+        .item.magazine-highlight-invalid {
+            border-color: rgba(255, 68, 68, 0.9) !important;
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.6) !important;
+        }
+
+        .item.has-image {
+            background: transparent;
+            border: none;
+            padding: 0;
+            box-shadow: none;
+            display: block;
+        }
+
+        .item-image-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .item-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        #inventoryItemTooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid rgba(102, 126, 234, 0.6);
+            border-radius: 5px;
+            padding: 10px;
+            color: #fff;
+            font-size: 0.85rem;
+            z-index: 10001;
+            pointer-events: none;
+            min-width: 200px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+        }
+
+        .tooltip-name {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .tooltip-type {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .tooltip-stats {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 3px 0;
+        }
+
+        #inventoryItemContextMenu {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid rgba(102, 126, 234, 0.6);
+            border-radius: 5px;
+            padding: 5px 0;
+            z-index: 10002;
+            min-width: 150px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+        }
+
+        .context-menu-item {
+            width: 100%;
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: #fff;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s ease;
+        }
+
+        .context-menu-item:hover {
+            background: rgba(102, 126, 234, 0.3);
+        }
+
+        .context-menu-item.hidden {
+            display: none;
+        }
+
+        /* 照準器（ADS） */
+        #ironsight {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 200;
+            pointer-events: none;
+        }
+
+        #ironsight.hidden {
+            display: none;
+        }
+
+        #ironsightImage {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: 200px;
+            max-height: 200px;
+        }
+
+        #inventoryItemDetailModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10003;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #inventoryItemDetailModal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: rgba(20, 20, 30, 0.95);
+            border: 2px solid rgba(102, 126, 234, 0.6);
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detail-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .detail-value {
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .modal-close-button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background: rgba(102, 126, 234, 0.3);
+            border: 2px solid rgba(102, 126, 234, 0.6);
+            border-radius: 5px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .modal-close-button:hover {
+            background: rgba(102, 126, 234, 0.5);
+            border-color: rgba(102, 126, 234, 1);
+        }
+
+        .attachment-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .attachment-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            min-width: 80px;
+        }
+
+        .attachment-slot {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            min-width: 45px;
+            min-height: 45px;
+        }
+
+        .attachment-slot .grid-cell {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="ui">
+            <!-- 左上：部位別体力 -->
+            <div id="bodyParts">
+                <div class="body-parts-row">
+                    頭: <span id="headHealth" class="body-part-value healthy">35/35</span>
+                </div>
+                <div class="body-parts-row">
+                    胸: <span id="chestHealth" class="body-part-value healthy">85/85</span> | 
+                    腹: <span id="stomachHealth" class="body-part-value healthy">70/70</span>
+                </div>
+                <div class="body-parts-row">
+                    左腕: <span id="leftArmHealth" class="body-part-value healthy">60/60</span> | 
+                    右腕: <span id="rightArmHealth" class="body-part-value healthy">60/60</span>
+                </div>
+                <div class="body-parts-row">
+                    左足: <span id="leftLegHealth" class="body-part-value healthy">65/65</span> | 
+                    右足: <span id="rightLegHealth" class="body-part-value healthy">65/65</span>
+                </div>
+                <div class="body-parts-row" id="statusEffectsSummary" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2);">
+                    <div id="statusEffectsDisplay"></div>
+                </div>
+            </div>
+            
+            <!-- 左上下：エネルギー・水分 -->
+            <div id="energyHydration" style="position: absolute; top: 200px; left: 20px; color: #fff; font-size: 18px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 5px;">
+                <div>エネルギー: <span id="energy">100</span>/100</div>
+                <div style="margin-top: 5px;">水分: <span id="hydration">100</span>/100</div>
+            </div>
+
+            <div id="raidPartsStatus">
+                スパークプラグ: <span id="raidSparkCount">0</span> | 燃料: <span id="raidFuelCount">0</span>
+            </div>
+            
+            <!-- 左下：スタミナバー -->
+            <div id="staminaContainer">
+                <div class="stamina-bar-container">
+                    <div class="stamina-label">上半身</div>
+                    <div class="stamina-bar">
+                        <div id="upperStaminaBar" class="stamina-bar-fill"></div>
+                    </div>
+                </div>
+                <div class="stamina-bar-container">
+                    <div class="stamina-label">下半身</div>
+                    <div class="stamina-bar">
+                        <div id="lowerStaminaBar" class="stamina-bar-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右上：FPS表示 -->
+            <div id="fpsDisplay" style="position: absolute; top: 20px; right: 20px; color: #fff; font-size: 18px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 5px; z-index: 150; font-family: 'Arial', sans-serif;">
+                FPS: <span id="fpsValue">0</span>
+            </div>
+
+            <!-- 右上：マップ -->
+            <div id="map">
+                <canvas id="mapCanvas"></canvas>
+            </div>
+
+            <!-- 左下：武器 -->
+            <div id="weapon">未装備</div>
+
+            <!-- 右下：残弾数 -->
+            <div id="ammo">
+                <span id="currentAmmo">0</span>
+                <span id="fireMode" style="margin-left: 10px; font-size: 0.8em; opacity: 0.7;">-</span>
+            </div>
+
+            <!-- 中央付近：ルートプロンプト -->
+            <div id="lootPrompt" class="hidden"></div>
+
+            <!-- 照準器（ADS時） -->
+            <div id="ironsight" class="hidden">
+                <img src="/pic/site/ironsight.png" alt="Ironsight" id="ironsightImage">
+            </div>
+
+            <!-- 自己ダメージツール -->
+            <div id="selfDamageContainer" class="ui-interactive">
+                <div id="selfDamageToggle">自己ダメージ</div>
+                <div id="selfDamagePanel" class="hidden">
+                    <div class="panel-row">
+                        <label for="selfDamageBody">部位</label>
+                        <select id="selfDamageBody">
+                            <option value="head">頭</option>
+                            <option value="chest">胸</option>
+                            <option value="stomach">腹</option>
+                            <option value="leftArm">左腕</option>
+                            <option value="rightArm">右腕</option>
+                            <option value="leftLeg">左脚</option>
+                            <option value="rightLeg">右脚</option>
+                        </select>
+                    </div>
+                    <div class="panel-row">
+                        <label for="selfDamageAmount">ダメージ</label>
+                        <input type="number" id="selfDamageAmount" min="1" value="10">
+                        <button id="selfDamageApply">ダメージ</button>
+                    </div>
+                    <div class="panel-row status-buttons">
+                        <button class="status-btn" data-status="lightBleeding">軽度出血</button>
+                        <button class="status-btn" data-status="heavyBleeding">重度出血</button>
+                        <button class="status-btn" data-status="fracture">骨折</button>
+                        <button class="status-btn" data-status="necrosis">壊死</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 医薬品使用進捗 -->
+            <div id="medicalUseProgress" class="hidden">
+                <div id="medicalUseLabel">医薬品使用中...</div>
+                <div class="medical-progress-bar">
+                    <div id="medicalUseProgressFill"></div>
+                </div>
+            </div>
+
+            <!-- 的の情報表示 -->
+            <div id="targetInfo" class="hidden" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.8); color: #fff; padding: 15px 20px; border-radius: 8px; border: 2px solid #fff; font-size: 16px; text-align: center; z-index: 200; pointer-events: none;">
+                <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">命中情報</div>
+                <div>弾種: <span id="targetAmmoType">-</span></div>
+                <div>口径: <span id="targetCaliber">-</span></div>
+                <div>ダメージ: <span id="targetDamage">-</span></div>
+                <div>貫通: <span id="targetPenetration">-</span></div>
+            </div>
+
+            <!-- クロスヘア -->
+            <div id="crosshair"></div>
+        </div>
+    </div>
+
+    <!-- インベントリオーバーレイ -->
+    <div id="inventoryOverlay" class="hidden">
+        <div id="inventoryScreen">
+            <div id="inventoryMainContent">
+                <!-- 左側：スクロール可能エリア -->
+                <div id="inventoryLeftScrollArea">
+                    <!-- 左側：プレイヤーモデルと装備スロット -->
+                    <div id="inventoryLeftPanel">
+                        <div id="inventoryPlayerModel">
+                            <div class="model-container">
+                                <div class="model-placeholder">
+                                    <div class="model-icon">👤</div>
+                                    <div class="model-label">プレイヤーモデル</div>
+                                </div>
+                            </div>
+                            <div id="inventoryStatusEffectsSummary" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
+                                <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; color: rgba(255,255,255,0.9);">異常状態</div>
+                                <div id="inventoryStatusEffectsDisplay"></div>
+                            </div>
+                            <div id="inventoryStatusEffectsDetail" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
+                                <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; color: rgba(255,255,255,0.9);">詳細</div>
+                                <div id="inventoryStatusEffectsDetailDisplay" style="font-size: 0.8rem; color: rgba(255,255,255,0.8);"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- 装備スロット -->
+                        <div id="inventoryEquipmentSlots">
+                            <div class="equipment-row">
+                                <div class="equipment-slot" data-slot="head">
+                                    <div class="slot-label">頭</div>
+                                    <div class="slot-content"></div>
+                                </div>
+                            </div>
+                            <div class="equipment-row">
+                                <div class="equipment-slot" data-slot="armor">
+                                    <div class="slot-label">アーマー</div>
+                                    <div class="slot-content"></div>
+                                </div>
+                            </div>
+                            <div class="equipment-row">
+                                <div class="equipment-slot" data-slot="rig">
+                                    <div class="slot-label">リグ</div>
+                                    <div class="slot-content"></div>
+                                </div>
+                            </div>
+                            <div class="equipment-row">
+                                <div class="equipment-slot" data-slot="backpack">
+                                    <div class="slot-label">バックパック</div>
+                                    <div class="slot-content"></div>
+                                </div>
+                            </div>
+                            <div class="equipment-row">
+                                <div class="equipment-slot small" data-slot="primary">
+                                    <div class="slot-label">メイン武器</div>
+                                    <div class="slot-content"></div>
+                                </div>
+                                <div class="equipment-slot small" data-slot="secondary">
+                                    <div class="slot-label">サブ武器</div>
+                                    <div class="slot-content"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 中央：リグ/バックパック パネル -->
+                    <div id="inventoryGearPanel" class="hidden">
+                        <!-- リグスタッシュ（装備時のみ表示） -->
+                        <div id="inventoryRigPanel" class="hidden">
+                            <div id="inventoryRigHeader">
+                                <h2 id="inventoryRigName">リグ</h2>
+                                <div id="inventoryRigInfo">
+                                    <span id="inventoryRigCapacity">0 / 8</span>
+                                </div>
+                            </div>
+                            
+                            <div id="inventoryRigGrid">
+                                <!-- グリッドセルはJavaScriptで生成 -->
+                            </div>
+                        </div>
+                        
+                        <!-- バックパックスタッシュ（装備時のみ表示） -->
+                        <div id="inventoryBackpackPanel" class="hidden">
+                            <div id="inventoryBackpackHeader">
+                                <h2 id="inventoryBackpackName">バックパック</h2>
+                                <div id="inventoryBackpackInfo">
+                                    <span id="inventoryBackpackCapacity">0 / 20</span>
+                                </div>
+                            </div>
+                            
+                            <div id="inventoryBackpackGrid">
+                                <!-- グリッドセルはJavaScriptで生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- アイテムツールチップ -->
+                <div id="inventoryItemTooltip" class="hidden"></div>
+            </div>
+            
+            <!-- コンテキストメニュー -->
+            <div id="inventoryItemContextMenu" class="hidden">
+                <button id="inventoryContextDetailButton" class="context-menu-item">詳細</button>
+                <button id="inventoryContextUnloadAmmoButton" class="context-menu-item hidden">弾薬を抜く</button>
+                <button id="inventoryContextUnloadMagazineButton" class="context-menu-item hidden">アンリロード</button>
+                <button id="inventoryContextUseButton" class="context-menu-item hidden">使用</button>
+                <button id="inventoryContextDropButton" class="context-menu-item">捨てる</button>
+            </div>
+            
+            <!-- アイテム詳細モーダル -->
+            <div id="inventoryItemDetailModal" class="hidden">
+                <div class="modal-content">
+                    <h3 id="inventoryDetailTitle"></h3>
+                    <div id="inventoryDetailStats"></div>
+                    <!-- 武器のアタッチメント欄 -->
+                    <div id="inventoryWeaponAttachments" class="hidden" style="margin-top: 20px;">
+                        <h4 style="margin-bottom: 10px; font-size: 14px;">アタッチメント</h4>
+                        <div class="attachment-section">
+                            <div class="attachment-label">マズル:</div>
+                            <div class="attachment-slot" data-attachment-type="muzzle" style="display: inline-grid; grid-template-columns: repeat(1, 45px); gap: 2px; width: 45px; height: 45px;"></div>
+                        </div>
+                        <div class="attachment-section">
+                            <div class="attachment-label">グリップ:</div>
+                            <div class="attachment-slot" data-attachment-type="grip" style="display: inline-grid; grid-template-columns: repeat(1, 45px); gap: 2px; width: 45px; height: 45px;"></div>
+                        </div>
+                        <div class="attachment-section">
+                            <div class="attachment-label">サイト:</div>
+                            <div class="attachment-slot" data-attachment-type="sight" style="display: inline-grid; grid-template-columns: repeat(1, 45px); gap: 2px; width: 45px; height: 45px;"></div>
+                        </div>
+                        <div class="attachment-section">
+                            <div class="attachment-label">マガジン:</div>
+                            <div class="attachment-slot" data-attachment-type="magazine" style="display: inline-grid; grid-template-columns: repeat(1, 45px); gap: 2px; width: 45px; height: 45px;"></div>
+                        </div>
+                        <div class="attachment-section">
+                            <div class="attachment-label">ストック:</div>
+                            <div class="attachment-slot" data-attachment-type="stock" style="display: inline-grid; grid-template-columns: repeat(1, 45px); gap: 2px; width: 45px; height: 45px;"></div>
+                        </div>
+                        <div class="attachment-section">
+                            <div class="attachment-label">バレル:</div>
+                            <div class="attachment-slot" data-attachment-type="barrel" style="display: inline-grid; grid-template-columns: repeat(1, 45px); gap: 2px; width: 45px; height: 45px;"></div>
+                        </div>
+                        <div class="attachment-section">
+                            <div class="attachment-label">レシーバー:</div>
+                            <div class="attachment-slot" data-attachment-type="receiver" style="display: inline-grid; grid-template-columns: repeat(1, 45px); gap: 2px; width: 45px; height: 45px;"></div>
+                        </div>
+                    </div>
+                    <button id="inventoryDetailCloseButton" class="modal-close-button">閉じる</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="medicalModeModal" class="hidden">
+        <div class="modal-content">
+            <h3>医薬品の使用方法</h3>
+            <p style="color: rgba(255, 255, 255, 0.85); font-size: 0.95rem;">特例医薬品の使用モードを選択してください。</p>
+            <div class="medical-mode-buttons">
+                <button id="medicalModeHealButton" class="medical-mode-button heal">回復のみ</button>
+                <button id="medicalModeStatusButton" class="medical-mode-button status">異常状態治し</button>
+            </div>
+            <button id="medicalModeCancelButton" class="modal-close-button" style="margin-top: 24px;">キャンセル</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="{{ url_for('static', filename='game.js') }}"></script>
+</body>
+</html>
+

@@ -1,0 +1,1308 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Rajdhani', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+#homeScreen {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* 背景レイヤー */
+#backgroundLayer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: opacity 1s ease-in-out;
+    z-index: 1;
+}
+
+#backgroundLayer:not([style*="background-image"]) {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* オーバーレイ */
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 2;
+}
+
+/* コンテンツ */
+#content {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 60px;
+    animation: fadeIn 0.8s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* タイトル */
+#title {
+    text-align: center;
+    margin-bottom: 60px;
+    animation: titleSlideIn 1s ease-out 0.3s both;
+}
+
+#playerOverview {
+    width: 100%;
+    max-width: 500px;
+    margin-bottom: 40px;
+    margin-right: auto;
+    margin-left: 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 20px;
+    background: rgba(8, 12, 24, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(4px);
+    animation: menuSlideIn 1s ease-out 0.5s both;
+    align-self: flex-start;
+}
+
+.player-overview-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    width: 100%;
+}
+
+.player-overview-label {
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.08em;
+    font-size: 0.9rem;
+}
+
+.player-overview-level {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(102, 126, 234, 0.6);
+}
+
+.player-overview-bar {
+    width: 100%;
+    height: 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.player-overview-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #6dd5ed, #2193b0);
+    box-shadow: 0 0 12px rgba(109, 213, 237, 0.7);
+    transition: width 0.3s ease;
+}
+
+.player-overview-xp {
+    width: 100%;
+    text-align: right;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+@keyframes titleSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.title-main {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 4rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 
+        0 0 10px rgba(255, 255, 255, 0.5),
+        0 0 20px rgba(255, 255, 255, 0.3),
+        0 0 30px rgba(255, 255, 255, 0.2),
+        4px 4px 8px rgba(0, 0, 0, 0.8);
+    letter-spacing: 0.2em;
+    animation: titleGlow 3s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+    0%, 100% {
+        text-shadow: 
+            0 0 10px rgba(255, 255, 255, 0.5),
+            0 0 20px rgba(255, 255, 255, 0.3),
+            0 0 30px rgba(255, 255, 255, 0.2),
+            4px 4px 8px rgba(0, 0, 0, 0.8);
+    }
+    50% {
+        text-shadow: 
+            0 0 20px rgba(255, 255, 255, 0.8),
+            0 0 40px rgba(255, 255, 255, 0.5),
+            0 0 60px rgba(255, 255, 255, 0.3),
+            4px 4px 8px rgba(0, 0, 0, 0.8);
+    }
+}
+
+/* メニューコンテナ */
+#menuContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 500px;
+    animation: menuSlideIn 1s ease-out 0.6s both;
+}
+
+@keyframes menuSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* メニューボタン */
+.menu-button {
+    position: relative;
+    width: 100%;
+    padding: 20px 30px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    box-shadow: none;
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.menu-button::before {
+    display: none;
+}
+
+.menu-button:hover::before {
+    display: none;
+}
+
+.menu-button:hover {
+    transform: none;
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: transparent;
+    opacity: 0.8;
+}
+
+.menu-button:active {
+    transform: none;
+}
+
+/* リップルアニメーション */
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: ripple 0.6s ease-out;
+    pointer-events: none;
+}
+
+.button-icon {
+    font-size: 1.5rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.button-text {
+    position: relative;
+    z-index: 1;
+}
+
+/* 非表示クラス */
+.hidden {
+    display: none !important;
+}
+
+/* ユーザー情報 */
+#userInfo {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    animation: userInfoFadeIn 1s ease-out 1s both;
+}
+
+@keyframes userInfoFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.username {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+#usernameDisplay {
+    color: #667eea;
+    font-weight: 700;
+}
+
+.logout-button {
+    padding: 8px 20px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: none;
+}
+
+.logout-button:hover {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: #fff;
+    transform: none;
+    opacity: 0.8;
+}
+
+/* DEVメニューモーダル */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.dev-modal-content {
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(15, 52, 96, 0.95) 100%);
+    border: 2px solid rgba(102, 126, 234, 0.5);
+    border-radius: 15px;
+    padding: 0;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+.modal-header h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    color: #fff;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.modal-close-button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    border-radius: 0;
+}
+
+.modal-close-button:hover {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: #fff;
+    transform: none;
+    opacity: 0.8;
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+.time-modal-content {
+    background: linear-gradient(135deg, rgba(12, 18, 34, 0.96) 0%, rgba(26, 32, 56, 0.96) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    width: 90%;
+    max-width: 520px;
+    box-shadow: 0 12px 45px rgba(0, 0, 0, 0.85);
+    animation: modalSlideIn 0.25s ease-out;
+}
+
+.time-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+}
+
+.time-option-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+}
+
+.time-mode-button {
+    padding: 18px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.time-mode-button small {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.time-mode-button:hover {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transform: none;
+    opacity: 0.8;
+}
+
+.time-mode-button.active {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: transparent;
+    box-shadow: none;
+    opacity: 1;
+}
+
+.settings-modal-content {
+    background: rgba(8, 12, 24, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 14px;
+    width: 95%;
+    max-width: 640px;
+    box-shadow: 0 12px 45px rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(6px);
+    animation: modalSlideIn 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+}
+
+.settings-section small {
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 400;
+}
+
+.settings-section select,
+.settings-section input[type="range"] {
+    width: 100%;
+    background: rgba(8, 12, 24, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0;
+    padding: 10px;
+    color: #fff;
+    font-size: 1rem;
+    font-family: 'Rajdhani', sans-serif;
+    outline: none;
+    transition: border 0.2s ease, background 0.2s ease;
+}
+
+.settings-section select:focus,
+.settings-section input[type="range"]:focus {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(8, 12, 24, 0.5);
+}
+
+.settings-section input[type="range"] {
+    -webkit-appearance: none;
+    height: 6px;
+    padding: 0;
+}
+
+.settings-section input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.settings-section input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 20px 25px 25px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.modal-primary-button,
+.modal-secondary-button {
+    flex: 1;
+    padding: 12px 0;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.modal-primary-button {
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.modal-primary-button:hover {
+    transform: none;
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    opacity: 0.8;
+}
+
+.modal-secondary-button {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.modal-secondary-button:hover {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    opacity: 0.8;
+}
+
+.dev-setting-item {
+    margin-bottom: 20px;
+}
+
+.dev-button {
+    padding: 6px 15px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dev-button:hover {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transform: none;
+    box-shadow: none;
+    opacity: 0.8;
+}
+
+.dev-setting-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* トグルスイッチ */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    transition: 0.3s;
+    border-radius: 26px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 2px;
+    background-color: #fff;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+}
+
+.toggle-switch input:focus + .toggle-slider {
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+.trader-modal-content {
+    background: rgba(8, 12, 24, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 14px;
+    width: 95%;
+    max-width: 1180px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(6px);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.trader-modal-header {
+    gap: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.trader-header-meta {
+    margin-left: auto;
+    display: flex;
+    gap: 18px;
+    align-items: flex-end;
+}
+
+.player-level-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.2;
+}
+
+.player-level-label {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.player-level-info small {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.trader-currency {
+    font-size: 1.1rem;
+    color: #9fd5ff;
+    font-weight: 700;
+    text-shadow: 0 0 8px rgba(159, 213, 255, 0.5);
+}
+
+.trader-modal-body {
+    padding: 0;
+}
+
+.trader-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 20px;
+    padding: 20px;
+    height: 100%;
+}
+
+.trader-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.trader-card {
+    background: rgba(8, 12, 24, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    outline: none;
+    text-align: left;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.trader-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.trader-card strong {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+}
+
+.trader-level-badge {
+    background: rgba(8, 12, 24, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+    color: #fff;
+}
+
+.trader-level-progress {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.8rem;
+}
+
+.trader-card span {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.trader-card.active {
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.trader-panels {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    overflow-y: auto;
+    max-height: 70vh;
+    padding-right: 6px;
+}
+
+.trader-panel {
+    background: rgba(8, 12, 24, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px);
+}
+
+.trader-tabs {
+    display: flex;
+    gap: 12px;
+}
+
+.trader-tab-button {
+    flex: 1;
+    padding: 10px 0;
+    border-radius: 0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.trader-tab-button.active {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: #fff;
+    box-shadow: none;
+    opacity: 1;
+}
+
+.trader-tab-body {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.trader-tab-section.hidden {
+    display: none;
+}
+
+.panel-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.panel-header h3 {
+    color: #fff;
+    font-size: 1.2rem;
+}
+
+.panel-header small {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.trader-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.trader-section h4 {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.trader-section .trader-grid {
+    margin-top: 4px;
+}
+
+.trader-grid,
+.player-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.trader-item-card,
+.player-item-card {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 12px;
+    background: rgba(8, 12, 24, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    backdrop-filter: blur(2px);
+    overflow: visible;
+    z-index: 0;
+}
+
+.item-image {
+    width: 100%;
+    height: 120px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.item-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+}
+
+.trader-item-card:hover,
+.player-item-card:hover {
+    z-index: 50; /* ツールチップを他のカードの上に表示 */
+}
+
+.item-title {
+    font-weight: 700;
+    color: #fff;
+}
+
+.item-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.rarity-pill {
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(8, 12, 24, 0.3);
+}
+
+.rarity-pill.Mythic {
+    background: rgba(255, 20, 147, 0.3);
+    color: #ff1493;
+    box-shadow: 0 0 10px rgba(255, 20, 147, 0.5);
+    border-color: rgba(255, 20, 147, 0.5);
+}
+
+.rarity-pill.Legendary {
+    background: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+}
+
+.rarity-pill.Epic {
+    background: rgba(186, 85, 211, 0.2);
+    color: #da70d6;
+}
+
+.rarity-pill.Rare {
+    background: rgba(70, 130, 180, 0.2);
+    color: #87cefa;
+}
+
+.rarity-pill.Uncommon {
+    background: rgba(46, 204, 113, 0.2);
+    color: #7bed9f;
+}
+
+.rarity-pill.Common {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.price-tag {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffd369;
+}
+
+.trader-item-card button,
+.player-item-card button {
+    margin-top: auto;
+    padding: 8px 0;
+    border-radius: 0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    font-weight: 700;
+    transition: opacity 0.2s ease;
+    background: transparent;
+}
+
+.trader-item-card button {
+    background: transparent;
+    color: #fff;
+}
+
+.player-item-card button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+}
+
+.trader-item-card button:disabled,
+.player-item-card button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.rarity-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.quest-modal-content {
+    background: rgba(8, 12, 24, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 14px;
+    width: 90%;
+    max-width: 1100px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(6px);
+}
+
+.quest-modal-body {
+    padding: 20px;
+}
+
+.quest-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.quest-column {
+    background: rgba(8, 12, 24, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    backdrop-filter: blur(4px);
+}
+
+.quest-column h3 {
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+}
+
+.quest-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.quest-card {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 12px;
+    background: rgba(8, 12, 24, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    backdrop-filter: blur(2px);
+}
+
+.quest-card h4 {
+    margin: 0;
+    color: #fff;
+}
+
+.quest-objective,
+.quest-status {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.quest-card button {
+    margin-top: 6px;
+    padding: 8px;
+    border-radius: 0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: transparent;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quest-card button:hover:not(:disabled) {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    opacity: 0.8;
+}
+
+.quest-card button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.item-tooltip {
+    position: absolute;
+    left: 0;
+    top: auto;
+    bottom: calc(100% + 10px);
+    transform: none;
+    min-width: 180px;
+    background: rgba(10, 15, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: #fff;
+    font-size: 0.85rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+    z-index: 20;
+    pointer-events: none;
+}
+
+.trader-item-card:hover .item-tooltip,
+.player-item-card:hover .item-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+.item-tooltip .tooltip-title {
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #ffd369;
+}
+
+.item-tooltip .tooltip-subtitle {
+    margin-top: 6px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.item-tooltip .tooltip-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.item-tooltip .tooltip-line span {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.item-tooltip ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+}
+
+.item-tooltip li {
+    margin-bottom: 2px;
+}
+
+.quantity-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.quantity-input {
+    width: 80px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+}
+
+.quantity-input:focus {
+    border-color: rgba(102, 126, 234, 0.8);
+    outline: none;
+}
+
+.rarity-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rarity-item-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.rarity-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.rarity-row strong {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.rarity-bar {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.rarity-bar span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ff9966, #ff5e62);
+}
+
+.empty-state {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+    .title-main {
+        font-size: 2.5rem;
+    }
+    
+    .menu-button {
+        font-size: 1.1rem;
+        padding: 15px 25px;
+    }
+    
+    #menuContainer {
+        max-width: 90%;
+    }
+    
+    #userInfo {
+        bottom: 20px;
+        right: 20px;
+    }
+
+    .trader-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .trader-panels {
+        max-height: none;
+    }
+}
+

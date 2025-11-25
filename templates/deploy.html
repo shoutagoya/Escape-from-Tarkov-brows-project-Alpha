@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>出撃 - EFT</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='deploy.css') }}">
+</head>
+<body>
+    <div id="deployScreen">
+        <!-- 背景レイヤー -->
+        <div id="backgroundLayer"></div>
+        <div id="overlay"></div>
+        
+        <!-- コンテンツ -->
+        <div id="content">
+            <!-- タイトル -->
+            <div id="title">
+                <h1 class="title-main">出撃</h1>
+            </div>
+            
+            <!-- 選択ボタン -->
+            <div id="selectionContainer">
+                <button class="selection-button" id="pmcButton">
+                    <div class="button-icon">🎖</div>
+                    <div class="button-label">PMC</div>
+                    <div class="button-description">プライベート軍事会社</div>
+                </button>
+                
+                <button class="selection-button" id="scavButton">
+                    <div class="button-icon">🔫</div>
+                    <div class="button-label">SCAV</div>
+                    <div class="button-description">スカベンジャー</div>
+                </button>
+            </div>
+            
+            <!-- 戻るボタン -->
+            <div id="bottomNav">
+                <button id="backButton" class="nav-button">
+                    <span>← 戻る</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='deploy.js') }}"></script>
+</body>
+</html>
+

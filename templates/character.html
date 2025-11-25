@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>キャラクター - EFT</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='character.css') }}">
+</head>
+<body>
+    <div id="characterScreen">
+        <!-- 背景レイヤー -->
+        <div id="backgroundLayer"></div>
+        <div id="overlay"></div>
+        
+        <!-- メインコンテンツ -->
+        <div id="mainContent">
+            <!-- 左側：スクロール可能エリア -->
+            <div id="leftScrollArea">
+            <!-- 左側：プレイヤーモデルと装備スロット -->
+            <div id="leftPanel">
+                <div id="playerModel">
+                    <div class="model-container">
+                        <div class="model-placeholder">
+                            <div class="model-icon">👤</div>
+                            <div class="model-label">プレイヤーモデル</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 装備スロット -->
+                <div id="equipmentSlots">
+                    <div class="equipment-row">
+                        <div class="equipment-slot" data-slot="head">
+                            <div class="slot-label">頭</div>
+                            <div class="slot-content"></div>
+                        </div>
+                    </div>
+                    <div class="equipment-row">
+                        <div class="equipment-slot" data-slot="armor">
+                            <div class="slot-label">アーマー</div>
+                            <div class="slot-content"></div>
+                        </div>
+                    </div>
+                    <div class="equipment-row">
+                        <div class="equipment-slot" data-slot="rig">
+                            <div class="slot-label">リグ</div>
+                            <div class="slot-content"></div>
+                        </div>
+                    </div>
+                    <div class="equipment-row">
+                        <div class="equipment-slot" data-slot="backpack">
+                            <div class="slot-label">バックパック</div>
+                            <div class="slot-content"></div>
+                        </div>
+                    </div>
+                    <div class="equipment-row">
+                        <div class="equipment-slot small" data-slot="primary">
+                            <div class="slot-label">メイン武器</div>
+                            <div class="slot-content"></div>
+                        </div>
+                        <div class="equipment-slot small" data-slot="secondary">
+                            <div class="slot-label">サブ武器</div>
+                            <div class="slot-content"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 中央：リグ/バックパック パネル -->
+            <div id="gearPanel" class="hidden">
+                <!-- リグスタッシュ（装備時のみ表示） -->
+                <div id="rigPanel" class="hidden">
+                    <div id="rigHeader">
+                        <h2 id="rigName">リグ</h2>
+                        <div id="rigInfo">
+                            <span id="rigCapacity">0 / 8</span>
+                        </div>
+                    </div>
+                    
+                    <div id="rigGrid">
+                        <!-- グリッドセルはJavaScriptで生成 -->
+                    </div>
+                </div>
+                
+                <!-- バックパックスタッシュ（装備時のみ表示） -->
+                <div id="backpackPanel" class="hidden">
+                    <div id="backpackHeader">
+                        <h2 id="backpackName">バックパック</h2>
+                        <div id="backpackInfo">
+                            <span id="backpackCapacity">0 / 20</span>
+                        </div>
+                    </div>
+                    
+                    <div id="backpackGrid">
+                        <!-- グリッドセルはJavaScriptで生成 -->
+                    </div>
+                </div>
+            </div>
+            </div>
+            <!-- 左側スクロールエリア終了 -->
+            
+            <!-- 右側：スタッシュ（インベントリ） -->
+            <div id="rightPanel">
+                <div id="stashHeader">
+                    <h2>スタッシュ</h2>
+                    <div id="stashInfo">
+                        <span id="stashCapacity">0</span>
+                    </div>
+                </div>
+                
+                <div id="stashGrid">
+                    <!-- グリッドセルはJavaScriptで生成 -->
+                </div>
+                
+                <!-- アイテムツールチップ -->
+                <div id="itemTooltip" class="hidden"></div>
+            </div>
+        </div>
+        
+        <!-- 下部：ナビゲーション -->
+        <div id="bottomNav">
+            <button id="backButton" class="nav-button">
+                <span>← 戻る</span>
+            </button>
+            <div id="characterInfo">
+                <span id="characterName"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="itemContextMenu" class="hidden">
+        <button id="contextDetailButton" class="context-menu-item">詳細</button>
+        <button id="contextUnloadAmmoButton" class="context-menu-item hidden">弾薬を抜く</button>
+        <button id="contextUnloadMagazineButton" class="context-menu-item hidden">アンリロード</button>
+        <button id="contextCheckMagazineCompositionButton" class="context-menu-item hidden">構成を確認する</button>
+        <button id="contextSplitButton" class="context-menu-item hidden">分割</button>
+    </div>
+
+    <div id="itemDetailModal" class="hidden">
+        <div class="modal-content">
+            <h3 id="detailTitle"></h3>
+            <div id="detailStats"></div>
+            <!-- 武器のアタッチメント欄 -->
+            <div id="weaponAttachments" class="hidden" style="margin-top: 20px;">
+                <h4 style="margin-bottom: 10px; font-size: 14px;">アタッチメント</h4>
+                <div class="attachment-section">
+                    <div class="attachment-label">マズル:</div>
+                    <div class="attachment-slot" data-attachment-type="muzzle"></div>
+                </div>
+                <div class="attachment-section">
+                    <div class="attachment-label">グリップ:</div>
+                    <div class="attachment-slot" data-attachment-type="grip"></div>
+                </div>
+                <div class="attachment-section">
+                    <div class="attachment-label">サイト:</div>
+                    <div class="attachment-slot" data-attachment-type="sight"></div>
+                </div>
+                <div class="attachment-section">
+                    <div class="attachment-label">マガジン:</div>
+                    <div class="attachment-slot" data-attachment-type="magazine"></div>
+                </div>
+                <div class="attachment-section">
+                    <div class="attachment-label">ストック:</div>
+                    <div class="attachment-slot" data-attachment-type="stock"></div>
+                </div>
+                <div class="attachment-section">
+                    <div class="attachment-label">バレル:</div>
+                    <div class="attachment-slot" data-attachment-type="barrel"></div>
+                </div>
+                <div class="attachment-section">
+                    <div class="attachment-label">レシーバー:</div>
+                    <div class="attachment-slot" data-attachment-type="receiver"></div>
+                </div>
+            </div>
+            <button id="detailCloseButton" class="modal-close-button">閉じる</button>
+        </div>
+    </div>
+    
+    <!-- マガジン構成確認モーダル -->
+    <div id="magazineCompositionModal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="magazineCompositionTitle">マガジン構成</h3>
+            <div id="magazineCompositionContent" style="max-height: 400px; overflow-y: auto; margin: 20px 0;">
+                <!-- 構成がここに表示されます -->
+            </div>
+            <button id="magazineCompositionCloseButton" class="modal-close-button">閉じる</button>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='character.js') }}"></script>
+</body>
+</html>
+

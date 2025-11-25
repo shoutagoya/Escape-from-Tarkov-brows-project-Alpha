@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EFT - Escape from Tarkov</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='title.css') }}">
+</head>
+<body>
+    <div id="titleScreen">
+        <!-- 背景画像レイヤー -->
+        <div id="backgroundLayer"></div>
+        
+        <!-- オーバーレイ（暗くするためのレイヤー） -->
+        <div id="overlay"></div>
+        
+        <!-- コンテンツ -->
+        <div id="content">
+            <!-- タイトル -->
+            <div id="title">
+                <h1 class="title-main">ESCAPE FROM TARKOV</h1>
+                <div class="title-subtitle">3D SURVIVAL GAME</div>
+            </div>
+            
+            <!-- スタートボタン -->
+            <div id="buttonContainer">
+                <button id="startButton" class="game-button">
+                    <span class="button-text">START GAME</span>
+                    <span class="button-glow"></span>
+                </button>
+            </div>
+            
+            <!-- 背景画像設定ボタン（オプション） -->
+            <div id="settingsContainer">
+                <button id="bgSettingsButton" class="settings-button">
+                    <span>背景設定</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 背景画像設定モーダル -->
+        <div id="bgModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>背景画像設定</h2>
+                <div class="modal-body">
+                    <label for="bgImageInput">画像URLを入力:</label>
+                    <input type="text" id="bgImageInput" placeholder="https://example.com/image.jpg">
+                    <button id="applyBgButton" class="apply-button">適用</button>
+                    <button id="resetBgButton" class="reset-button">デフォルトに戻す</button>
+                    <div class="preview-section">
+                        <h3>プレビュー</h3>
+                        <div id="bgPreview"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='title.js') }}"></script>
+</body>
+</html>
+

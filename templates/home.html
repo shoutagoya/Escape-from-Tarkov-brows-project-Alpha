@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ホーム - EFT</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+</head>
+<body>
+    <div id="homeScreen">
+        <!-- 背景レイヤー -->
+        <div id="backgroundLayer"></div>
+        <div id="overlay"></div>
+        
+        <!-- コンテンツ -->
+        <div id="content">
+            <!-- タイトル -->
+            <div id="title">
+                <h1 class="title-main">ESCAPE FROM TARKOV</h1>
+            </div>
+            
+            <!-- プレイヤー概要 -->
+            <div id="playerOverview">
+                <div class="player-overview-info">
+                    <span class="player-overview-label">プレイヤーレベル</span>
+                    <div class="player-overview-level" id="homePlayerLevel">Lv.1</div>
+                </div>
+                <div class="player-overview-bar">
+                    <div class="player-overview-fill" id="homePlayerXpFill"></div>
+                </div>
+                <div class="player-overview-xp" id="homePlayerXpText">0 / 0 XP</div>
+            </div>
+            
+            <!-- メニューボタン -->
+            <div id="menuContainer">
+                <button class="menu-button" id="deployButton">
+                    <span class="button-icon"></span>
+                    <span class="button-text">Escape From Tarkov</span>
+                </button>
+                
+                <button class="menu-button" id="characterButton">
+                    <span class="button-icon"></span>
+                    <span class="button-text">Character</span>
+                </button>
+                
+                <button class="menu-button" id="traderButton">
+                    <span class="button-icon"></span>
+                    <span class="button-text">Trader</span>
+                </button>
+                <button class="menu-button" id="questButton">
+                    <span class="button-icon"></span>
+                    <span class="button-text">Quest</span>
+                </button>
+                
+                <button class="menu-button" id="hideoutButton">
+                    <span class="button-icon"></span>
+                    <span class="button-text">HydeOut</span>
+                </button>
+                
+                <button class="menu-button" id="settingsButton">
+                    <span class="button-icon"></span>
+                    <span class="button-text">Option</span>
+                </button>
+                
+                <button class="menu-button hidden" id="devMenuButton">
+                    <span class="button-icon"></span>
+                    <span class="button-text">developing option</span>
+                </button>
+            </div>
+            
+            <!-- ユーザー情報とログアウト -->
+            <div id="userInfo">
+                <div class="username">ユーザー: <span id="usernameDisplay"></span></div>
+                <button id="logoutButton" class="logout-button">ログアウト</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 設定モーダル -->
+    <div id="settingsModal" class="modal hidden">
+        <div class="modal-content settings-modal-content">
+            <div class="modal-header">
+                <h2>ビデオ設定</h2>
+                <button id="settingsCloseButton" class="modal-close-button">×</button>
+            </div>
+            <div class="modal-body settings-modal-body">
+                <div class="settings-section">
+                    <label for="resolutionScaleSlider">解像度スケール <span id="resolutionScaleValue">100%</span></label>
+                    <input type="range" id="resolutionScaleSlider" min="0.1" max="2.0" step="0.05">
+                    <small>描画解像度を調整してパフォーマンスを最適化します。</small>
+                </div>
+
+                <div class="settings-section">
+                    <label for="textureQualitySelect">テクスチャ品質</label>
+                    <select id="textureQualitySelect">
+                        <option value="low">低</option>
+                        <option value="medium">中</option>
+                        <option value="high">高</option>
+                    </select>
+                    <small>異方性フィルタリングなどの品質を制御します。</small>
+                </div>
+
+                <div class="settings-section">
+                    <label for="shadowQualitySelect">影の品質</label>
+                    <select id="shadowQualitySelect">
+                        <option value="off">なし</option>
+                        <option value="low">低</option>
+                        <option value="medium">中</option>
+                        <option value="high">高</option>
+                    </select>
+                    <small>影の解像度と描画コストを調整します。</small>
+                </div>
+
+                <div class="settings-section">
+                    <label for="drawDistanceSelect">描画距離</label>
+                    <select id="drawDistanceSelect">
+                        <option value="short">短い</option>
+                        <option value="medium">標準</option>
+                        <option value="long">長い</option>
+                    </select>
+                    <small>AI と描画の距離を調整します。</small>
+                </div>
+
+                <div class="settings-section">
+                    <label for="vegetationDensitySelect">植生密度</label>
+                    <select id="vegetationDensitySelect">
+                        <option value="low">低</option>
+                        <option value="medium">標準</option>
+                        <option value="high">高</option>
+                    </select>
+                    <small>木や雑草、ブッシュの量を制御します。</small>
+                </div>
+
+                <div class="settings-section">
+                    <label for="fogDensitySelect">フォグ密度</label>
+                    <select id="fogDensitySelect">
+                        <option value="off">なし</option>
+                        <option value="low">薄い</option>
+                        <option value="medium">標準</option>
+                        <option value="high">濃い</option>
+                    </select>
+                    <small>霧の濃さで雰囲気と負荷を調整します。</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="settingsResetButton" class="modal-secondary-button">デフォルト</button>
+                <button id="settingsSaveButton" class="modal-primary-button">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 出撃時間帯モーダル -->
+    <div id="timeOfDayModal" class="modal hidden">
+        <div class="modal-content time-modal-content">
+            <div class="modal-header">
+                <h2>出撃時間帯の選択</h2>
+                <button id="timeModalCloseButton" class="modal-close-button">×</button>
+            </div>
+            <div class="modal-body time-modal-body">
+                <p>PMC出撃の時間帯を選んでください。</p>
+                <div class="time-option-buttons">
+                    <button class="time-mode-button" data-time-mode="day">
+                        <span>🌞 昼 (Day)</span>
+                        <small>太陽の下で視界良好</small>
+                    </button>
+                    <button class="time-mode-button" data-time-mode="night">
+                        <span>🌙 夜 (Night)</span>
+                        <small>月明かりのみの暗闇</small>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="timeModalCancelButton" class="modal-secondary-button">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEVメニューモーダル -->
+    <div id="devMenuModal" class="modal hidden">
+        <div class="modal-content dev-modal-content">
+            <div class="modal-header">
+                <h2>DEVメニュー</h2>
+                <button id="devMenuCloseButton" class="modal-close-button">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="dev-setting-item">
+                    <label class="dev-setting-label">
+                        <span>敵を動かす</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enemyMovementToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </label>
+                </div>
+                
+                <div class="dev-setting-item">
+                    <h3>トレーダーレベル操作</h3>
+                    <div id="traderLevelControls">
+                        <!-- トレーダーレベルコントロールがここに動的に追加されます -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- トレーダーモーダル -->
+    <div id="traderModal" class="modal hidden">
+        <div class="modal-content trader-modal-content">
+            <div class="modal-header trader-modal-header">
+                <h2>トレーダー</h2>
+                <div class="trader-header-meta">
+                    <div class="player-level-info">
+                        <span class="player-level-label" id="playerLevelLabel">Lv.1</span>
+                        <small id="playerXpSummary">0 XP</small>
+                    </div>
+                    <div class="trader-currency">所持資金: <span id="traderCurrencyValue">0</span> ₽</div>
+                </div>
+                <button id="traderCloseButton" class="modal-close-button">×</button>
+            </div>
+            <div class="modal-body trader-modal-body">
+                <div class="trader-layout">
+                    <div class="trader-list" id="traderList"></div>
+                    <div class="trader-panels">
+                        <div class="trader-tabs">
+                            <button type="button" class="trader-tab-button active" data-tab="buy">購入</button>
+                            <button type="button" class="trader-tab-button" data-tab="sell">売却</button>
+                        </div>
+                        <div class="trader-tab-body">
+                            <div id="traderBuyContent" class="trader-tab-section">
+                                <div class="trader-panel">
+                                    <div class="panel-header">
+                                        <h3 id="traderPanelTitle">在庫</h3>
+                                        <small id="traderPanelDescription"></small>
+                                    </div>
+                                    <div id="traderInventoryItems"></div>
+                                </div>
+                                <div class="trader-panel">
+                                    <div class="panel-header">
+                                        <h3>レア度可視化</h3>
+                                    </div>
+                                    <div id="rarityVisualization" class="rarity-wrapper"></div>
+                                </div>
+                            </div>
+                            <div id="traderSellContent" class="trader-tab-section hidden">
+                                <div class="trader-panel">
+                                    <div class="panel-header">
+                                        <h3>所持アイテムの売却</h3>
+                                    </div>
+                                    <div id="traderPlayerItems" class="player-grid"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- クエストモーダル -->
+    <div id="questModal" class="modal hidden">
+        <div class="modal-content quest-modal-content">
+            <div class="modal-header">
+                <h2>クエスト</h2>
+                <button id="questCloseButton" class="modal-close-button">×</button>
+            </div>
+            <div class="modal-body quest-modal-body">
+                <div class="quest-layout">
+                    <div class="quest-column">
+                        <h3>進行中</h3>
+                        <div id="activeQuestList" class="quest-list"></div>
+                    </div>
+                    <div class="quest-column">
+                        <h3>完了済み</h3>
+                        <div id="completedQuestList" class="quest-list"></div>
+                    </div>
+                    <div class="quest-column">
+                        <h3>未開放</h3>
+                        <div id="lockedQuestList" class="quest-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='home.js') }}"></script>
+</body>
+</html>
+
